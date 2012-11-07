@@ -25,9 +25,17 @@ object Parse extends RegexParsers {
   def section: Parser[Section] =
     sectionOpen | sectionClose | partial
 
-  def sectionOpen: Parser[SectionOpen] =
+  def sectionOpen: Parser[Section] =
+    invertedOpen | standardOpen
+
+  def standardOpen: Parser[SectionOpen] =
     "{{#" ~> id <~ "}}" ^^ {
       case id => SectionOpen(id)
+    }
+
+  def invertedOpen: Parser[InvertedOpen] =
+    "{{^" ~> id <~ "}}" ^^ {
+      case  id => InvertedOpen(id)
     }
 
   def sectionClose: Parser[SectionClose] =

@@ -10,5 +10,6 @@ case class UnescapedVariable(text: String) extends Tag
 
 trait Section extends Tag
 case class SectionOpen(text: String) extends Section
+case class InvertedOpen(text: String) extends Section
 case class SectionClose(text: String) extends Section
 case class Partial(name: String) extends Section
