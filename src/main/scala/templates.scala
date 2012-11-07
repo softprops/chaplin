@@ -44,6 +44,30 @@ object Templates {
                   case _ => ()
                 }
                 applyNext(writer)
+              case InvertedOpen(name) =>
+                val (untilClose, afterClose) = tail.toList.span(!_.isInstanceOf[SectionClose])
+                value match {
+                  case view: View => view(name) match {
+                    case None =>
+                      applyNext(writer)
+                    case Some(v: View) =>
+                      applyValue(value, afterClose, writer)
+                    case Some(Falsy(bool)) =>
+                      if (bool) applyValue(value, afterClose, writer)
+                      else applyNext(writer)
+                    case Some(IterableVal(it)) =>
+                      if (it.isEmpty) applyNext(writer)
+                      else applyValue(value, afterClose, writer)
+                    case _ => applyNext(writer)
+                  }
+                  case Falsy(bool) =>
+                    if (bool) applyValue(value, afterClose, writer)
+                    else applyNext(writer)
+                  case IterableVal(it) =>
+                     if (it.isEmpty) applyNext(writer)
+                     else applyValue(value, afterClose, writer)
+                  case _ => ()
+                }
               case SectionOpen(name) =>
                 val (untilClose, afterClose) = tail.toList.span(!_.isInstanceOf[SectionClose])
                 value match {
