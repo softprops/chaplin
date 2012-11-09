@@ -1,19 +1,19 @@
 package chaplin
 
-import java.io.{ PrintWriter => Writer }
+import java.io.Writer
 
 trait Template {
-  def apply(view: View, writer: Writer): Unit
+  def apply(view: View, writer: Writer): Writer
 }
 
 object Templates {
   val Self = "."
   def esc(in: String) = in // todo
   def mkTemplate(chunks: Seq[Chunk]): Template = new Template {
-    def apply(view: View, writer: Writer) = {
-      def applyValue(value: Value, chunks: Seq[Chunk], writer: Writer): Unit = {
+    def apply(view: View, writer: Writer): Writer = {
+      def applyValue(value: Value, chunks: Seq[Chunk], writer: Writer): Writer = {
         chunks match {
-          case Nil => ()
+          case Nil => writer
           case head :: tail =>
             def applyNext(nextWriter: Writer) = applyValue(value, tail, nextWriter)
             head match {
@@ -25,11 +25,11 @@ object Templates {
                   case view:View => view(name).map {
                     case StringVal(str) =>
                       writer.write(esc(str))
-                    case _ => ()
+                    case _ => writer
                   }
                   case StringVal(str) if (Self == name) =>
                     writer.write(esc(str))
-                  case _ => ()
+                  case _ => writer
                 }
                 applyNext(writer)
               case UnescapedVariable(name) =>
@@ -37,11 +37,11 @@ object Templates {
                   case view: View => view(name).map {
                     case StringVal(str) =>
                       writer.write(str)
-                    case _ => ()
+                    case _ => writer
                   }
                   case StringVal(str) if (Self == name) =>
                     writer.write(str)
-                  case _ => ()
+                  case _ => writer
                 }
                 applyNext(writer)
               case InvertedOpen(name) =>
@@ -66,7 +66,7 @@ object Templates {
                   case IterableVal(it) =>
                      if (it.isEmpty) applyNext(writer)
                      else applyValue(value, afterClose, writer)
-                  case _ => ()
+                  case _ => writer
                 }
               case SectionOpen(name) =>
                 val (untilClose, afterClose) = tail.toList.span(!_.isInstanceOf[SectionClose])
@@ -88,7 +88,7 @@ object Templates {
                     case _ =>
                       applyValue(view, afterClose, writer)
                   }
-                  case _ => ()
+                  case _ => writer
                 }
               case SectionClose(_) => applyNext(writer)
             }
