@@ -7,6 +7,7 @@ trait Tag extends Chunk
 
 case class Variable(text: String) extends Tag
 case class UnescapedVariable(text: String) extends Tag
+case class Comment(text: String) extends Tag
 
 trait Section extends Tag
 case class SectionOpen(text: String) extends Section
