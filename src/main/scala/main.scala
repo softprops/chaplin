@@ -12,13 +12,12 @@ object Main {
    |{{/in_ca}}""".stripMargin
 
    Mustache(typical).fold(identity, { template =>
-     val writer = new java.io.PrintWriter(System.out)
+     val writer = new PrintWriter(System.out)
      val view = View().bind("name", StringVal("chris"))
                       .bind("value", StringVal("10000"))
                       .bind("in_ca", Falsy(true))
                       .bind("taxed_value", StringVal((10000 - (10000 * 0.4)).toString))
-     template(view, writer)
-     writer.flush()
+     template(view, writer).flush()
    })
 
    val inverted = """{{#repo}}
@@ -33,12 +32,16 @@ object Main {
 
      // with repo
      val view = View().bind("repo", View().bind("name", StringVal("chaplin")))
-     template(view, writer)
-     writer.flush()
+     template(view, writer).flush()
 
      // without repo
-     template(View(), writer)
-     writer.flush()
+     template(View(), writer).flush()
+   })
+
+   val comment = "<h1>Today{{! ignore me }}.</h1>"
+   Mustache(comment).fold(identity, { template =>
+     val writer = new PrintWriter(System.out)
+     template(View(), writer).flush()
    })
 
  }
