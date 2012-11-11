@@ -20,10 +20,10 @@ object Parse extends RegexParsers {
     })
 
   def tag: Parser[Tag] =
-    log(comment)("comment") | section | variable
+    comment | section | variable
 
   def section: Parser[Section] =
-    sectionOpen | sectionClose | partial
+    sectionOpen | sectionClose
 
   def sectionOpen: Parser[Section] =
     invertedOpen | standardOpen
@@ -39,8 +39,8 @@ object Parse extends RegexParsers {
     }
 
   def comment: Parser[Comment] =
-    "{{!" ~> any <~ "}}" ^^ {
-      case any => Comment(any)
+    "{{!" ~> anythingBut("}}") <~ "}}" ^^ {
+      case Text(any) => Comment(any)
     }
 
   def sectionClose: Parser[SectionClose] =
@@ -49,7 +49,7 @@ object Parse extends RegexParsers {
     }
 
   def variable: Parser[Tag] =
-    unescVariable | escVariable
+    partial | unescVariable | escVariable
 
   def unescVariable: Parser[UnescapedVariable] =
     "{{{" ~> id <~ "}}}" ^^ {
