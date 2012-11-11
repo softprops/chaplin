@@ -91,6 +91,7 @@ object Templates {
                   case _ => writer
                 }
               case SectionClose(_) => applyNext(writer)
+              case Comment(_) => applyNext(writer)
             }
         }
       }
