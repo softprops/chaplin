@@ -1,6 +1,7 @@
 package chaplin
 
 sealed trait Value
+abstract class FuncVal extends Function0[Value] with Value
 case class StringVal(value: String) extends Value
 case class Falsy(value: Boolean) extends Value
 case class IterableVal(values: Iterable[Value]) extends Value
