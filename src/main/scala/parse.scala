@@ -52,7 +52,15 @@ object Parse extends RegexParsers {
     partial | unescVariable | escVariable
 
   def unescVariable: Parser[UnescapedVariable] =
+    tripleStache | amperStache
+
+  def tripleStache: Parser[UnescapedVariable] =
     "{{{" ~> id <~ "}}}" ^^ {
+      case v => UnescapedVariable(v)
+    }
+
+  def amperStache: Parser[UnescapedVariable] =
+    "{{&" ~> id <~ "}}" ^^ {
       case v => UnescapedVariable(v)
     }
 
