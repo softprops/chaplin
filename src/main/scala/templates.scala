@@ -1,6 +1,8 @@
 package chaplin
 
 import java.io.Writer
+import org.apache.commons.lang3.StringEscapeUtils
+import scala.xml.Utility
 
 trait Template {
   def apply(view: View, writer: Writer): Writer
@@ -8,7 +10,7 @@ trait Template {
 
 object Templates {
   val Self = "."
-  def esc(in: String) = in // todo
+  def esc(in: String) = StringEscapeUtils.escapeHtml4(in)
   def mkTemplate(chunks: Seq[Chunk]): Template = new Template {
     def apply(view: View, writer: Writer): Writer = {
       def applyValue(value: Value, chunks: Seq[Chunk], writer: Writer): Writer = {
