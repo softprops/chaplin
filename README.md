@@ -22,4 +22,4 @@ A no BS, 0 dependency mustache implementation you can take home to your parents.
                        writer)
     writer.flush()
 
-Doug Tangren (softprops) 2012
+Doug Tangren (softprops) 2012-2013
