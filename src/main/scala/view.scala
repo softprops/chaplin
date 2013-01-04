@@ -20,7 +20,14 @@ case class View(
     }
   /** resolve a label within this view or its parent view */
   def apply(label: String): Option[Value] =
-    bindings.get(label).orElse(parent.flatMap(_(label)))
+    if (label.contains(".")) {
+      label.span(_ != '.') match {
+        case (lab, rest) => apply(lab).flatMap {
+          case v: View => v.apply(rest.drop(1))
+          case value => Some(value)
+        }
+      }
+    } else bindings.get(label).orElse(parent.flatMap(_(label)))
 }
 
 

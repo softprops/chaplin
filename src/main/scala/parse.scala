@@ -10,7 +10,7 @@ object Parse extends RegexParsers {
 
   def any: Parser[String] = """.|(\r?\n)+""".r
 
-  def id: Parser[String] = """[0-9A-Za-z-_]+|[.]""".r
+  def id: Parser[String] = """[0-9A-Za-z-_.]+|[.]""".r
 
   def mustache: Parser[List[Chunk]] = 
     (tag | anythingBut(tag)).*
