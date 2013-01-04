@@ -6,6 +6,8 @@ object Parse extends RegexParsers {
 
   override def skipWhitespace = false
 
+  def ws: Parser[String] = """\s*""".r
+
   def any: Parser[String] = """.|(\r?\n)+""".r
 
   def id: Parser[String] = """[0-9A-Za-z-_]+|[.]""".r
@@ -29,22 +31,22 @@ object Parse extends RegexParsers {
     invertedOpen | standardOpen
 
   def standardOpen: Parser[SectionOpen] =
-    "{{#" ~> id <~ "}}" ^^ {
+    "{{#" ~> ws ~> id  <~ ws <~ "}}" ^^ {
       case id => SectionOpen(id)
     }
 
   def invertedOpen: Parser[InvertedOpen] =
-    "{{^" ~> id <~ "}}" ^^ {
+    "{{^" ~> ws ~> id <~ ws <~ "}}" ^^ {
       case id => InvertedOpen(id)
     }
 
   def comment: Parser[Comment] =
-    "{{!" ~> anythingBut("}}") <~ "}}" ^^ {
+    "{{!" ~> ws ~> anythingBut("}}") <~ ws <~ "}}" ^^ {
       case Text(any) => Comment(any)
     }
 
   def sectionClose: Parser[SectionClose] =
-    "{{/" ~> id <~ "}}" ^^ {
+    "{{/" ~> ws ~> id <~ ws <~ "}}" ^^ {
       case id => SectionClose(id)
     }
 
@@ -55,22 +57,22 @@ object Parse extends RegexParsers {
     tripleStache | amperStache
 
   def tripleStache: Parser[UnescapedVariable] =
-    "{{{" ~> id <~ "}}}" ^^ {
+    "{{{" ~> ws ~> id <~ ws <~ "}}}" ^^ {
       case v => UnescapedVariable(v)
     }
 
   def amperStache: Parser[UnescapedVariable] =
-    "{{&" ~> id <~ "}}" ^^ {
+    "{{&" ~> ws ~> id <~ ws <~ "}}" ^^ {
       case v => UnescapedVariable(v)
     }
 
   def escVariable: Parser[Variable] =
-    "{{" ~> id <~ "}}" ^^ {
+    "{{" ~> ws ~> id <~ ws <~ "}}" ^^ {
       case v => Variable(v)
     }
 
   def partial: Parser[Partial] =
-    "{{>" ~> id <~ "}}" ^^ {
+    "{{>" ~> ws ~> id <~ ws <~ "}}" ^^ {
       case name => Partial(name)
     }
 
