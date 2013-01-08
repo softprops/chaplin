@@ -10,12 +10,14 @@ object Templates {
   val Self = "."
   def esc(in: String) = Esc(in)
   def mkTemplate(chunks: Seq[Chunk]): Template = new Template {
+    println("chunks %s" format chunks)
     def apply(view: View, writer: Writer): Writer = {
-      def applyValue(value: Value, chunks: Seq[Chunk], writer: Writer): Writer = {
+      def applyValue(value: Value, chunks: Seq[Chunk], writer: Writer, standalone: Boolean = false): Writer = {
         chunks match {
           case Nil => writer
           case head :: tail =>
-            def applyNext(nextWriter: Writer) = applyValue(value, tail, nextWriter)
+            def applyNext(nextWriter: Writer, standalone: Boolean = false) =
+              applyValue(value, tail, nextWriter, standalone)
             head match {
               case Text(txt) =>
                 writer.write(txt)
@@ -49,12 +51,12 @@ object Templates {
                 value match {
                   case view: View => view(name) match {
                     case None =>
-                      applyNext(writer)
+                      applyNext(writer, standalone)
                     case Some(v: View) =>
                       applyValue(value, afterClose, writer)
                     case Some(Falsy(bool)) =>
                       if (bool) applyValue(value, afterClose, writer)
-                      else applyNext(writer)
+                      else applyNext(writer, standalone = true)
                     case Some(IterableVal(it)) =>
                       if (it.isEmpty) applyNext(writer)
                       else applyValue(value, afterClose, writer)

@@ -1,6 +1,6 @@
 package chaplin
 
-import java.io.{ InputStreamReader, Reader }
+import java.io.Reader
 
 class Mustache(resolver: Resolver) extends Reading with Chunking {
   /** Given a String containing template source, parse it into chunks
@@ -11,8 +11,8 @@ class Mustache(resolver: Resolver) extends Reading with Chunking {
         case (err @ Left(_), _) => err
         case (Right(chunks), Partial(name)) =>
           resolver.resolve(name) match {
-            case Some(url) =>
-              chunked(readAll(new InputStreamReader(url.openStream()))).
+            case Some(src) =>
+              chunked(src).
                 fold(Left(_), {
                   partialChunks =>
                     Right(partialChunks ::: chunks)
@@ -33,5 +33,8 @@ class Mustache(resolver: Resolver) extends Reading with Chunking {
 }
 
 object Mustache extends Mustache(Resolvers) {
+  /** read partials from the as urls relative to path */
   def dir(path: String) = new Mustache(Resolvers.under(path))
+  /** resolve partials as an in-memory lookup map */
+  def partials(parts: Map[String, String]) = new Mustache(Resolvers.memory(parts))
 }
