@@ -17,7 +17,9 @@ class Mustache(resolver: Resolver) extends Reading with Chunking {
                   partialChunks =>
                     Right(partialChunks ::: chunks)
                 })
-            case _ => Left("unresolved partial template: '%s'" format name)
+            case _ =>
+              println("unresolved partial template: '%s'" format name)
+              Right(chunks)
           }
         case (eth, c) => eth.fold(Left(_), {
           chunks => Right(c :: chunks)
@@ -36,5 +38,5 @@ object Mustache extends Mustache(Resolvers) {
   /** read partials from the as urls relative to path */
   def dir(path: String) = new Mustache(Resolvers.under(path))
   /** resolve partials as an in-memory lookup map */
-  def partials(parts: Map[String, String]) = new Mustache(Resolvers.memory(parts))
+  def partials(parts: Iterable[(String, String)]) = new Mustache(Resolvers.memory(parts.toMap))
 }
