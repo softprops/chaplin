@@ -10,7 +10,6 @@ object Templates {
   val Self = "."
   def esc(in: String) = Esc(in)
   def mkTemplate(chunks: Seq[Chunk]): Template = new Template {
-    println("chunks %s" format chunks)
     def apply(view: View, writer: Writer): Writer = {
       def applyValue(value: Value, chunks: Seq[Chunk], writer: Writer, standalone: Boolean = false): Writer = {
         chunks match {
