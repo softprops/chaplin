@@ -40,15 +40,15 @@ class MustacheSpec extends FunSpec {
               case JField("partials", partials) =>
                 for {
                   JObject(p) <- partials
-                  JField(name, content) <- p
+                  JField(name, JString(content)) <- p
                 } yield (name, content)
             }.getOrElse(Nil)
-            println(partial)
             val writer = new StringWriter()
             val view = Views.of(data) match {
               case Some(v:View) => v
               case _ => View()
             }
+            //println("template %s partial %s expected %s view %s" format(template, partial, expected, view))
             Mustache.partials(partial)(template).fold(fail(_), { must =>
               must(view, writer).flush()
               assert(writer.toString() === expected)
