@@ -9,7 +9,7 @@ trait Template {
 object Templates {
   val Self = "."
   def esc(in: String) = Esc(in)
-  def mkTemplate(chunks: Seq[Chunk]): Template = new Template {
+  def mkTemplate(chunks: Seq[Chunk], partials: Map[String, Seq[Chunk]] = Map.empty[String, Seq[Chunk]]): Template = new Template {
     def apply(view: View, writer: Writer): Writer = {
       def applyValue(value: Value, chunks: Seq[Chunk], writer: Writer, standalone: Boolean = false): Writer = {
         chunks match {
@@ -18,6 +18,10 @@ object Templates {
             def applyNext(nextWriter: Writer, standalone: Boolean = false) =
               applyValue(value, tail, nextWriter, standalone)
             head match {
+              case Partial(name) =>
+                val pchunks = partials.get(name).getOrElse(Nil)
+                applyValue(value, pchunks, writer)
+                applyNext(writer)
               case Text(txt) =>
                 writer.write(txt)
                 applyNext(writer)
