@@ -27,14 +27,16 @@ object Templates {
                 applyNext(writer)
               case Variable(name) =>
                 value match {
-                  case view:View => view(name).map {
+                  case view: View => view(name).map {
                     case StringVal(str) =>
                       writer.write(esc(str))
-                    case _ => writer
+                    case _ =>
+                      writer
                   }
                   case StringVal(str) if (Self == name) =>
                     writer.write(esc(str))
-                  case _ => writer
+                  case _ =>
+                    writer
                 }
                 applyNext(writer)
               case UnescapedVariable(name) =>
@@ -74,13 +76,20 @@ object Templates {
                   case _ => writer
                 }
               case SectionOpen(name) =>
-                val (untilClose, afterClose) = tail.toList.span(!_.isInstanceOf[SectionClose])
+                val (untilClose, afterClose) = tail.toList.span {
+                  case SectionClose(cname) if (cname == name) => false
+                  case _ => true
+                }
                 value match {
                   case view: View => view(name) match {
                     case None =>
                       applyValue(value, afterClose, writer)
                     case Some(v: View) =>
-                      applyValue(v, untilClose, writer)
+                      // here we are opening a scope and
+                      // need to ensure visibility of
+                      // the current scopes members
+                      // with a `shared view`
+                      applyValue(v.share(view), untilClose, writer)
                       applyValue(view, afterClose, writer)
                     case Some(Falsy(bool)) =>
                       if (!bool) applyValue(view,
@@ -93,9 +102,11 @@ object Templates {
                     case _ =>
                       applyValue(view, afterClose, writer)
                   }
-                  case _ => writer
+                  case _ =>
+                    writer
                 }
-              case SectionClose(_) => applyNext(writer)
+              case SectionClose(name) =>
+                applyNext(writer)
               case Comment(_) => applyNext(writer)
             }
         }
