@@ -10,14 +10,22 @@ case class View(
   parent: Option[View] = None) extends Value {
   /** binds a value to a label. If the value is a view, tag it with
    *  this as its parent */
-  def bind(label: String, value: Value) =
-    value match {
-      case view:View =>
-        copy(bindings =
-          bindings + (label -> view.copy(parent = Some(this))))
-      case _ =>
-        copy(bindings = bindings + (label -> value))
-    }
+  def bind(label: String, value: Value): View =
+    copy(bindings = bindings + (label -> value)).reparent
+
+  /** shared views */
+  def share(view: View) =
+    copy(bindings ++ view.bindings)
+
+  /** update all of the current view's binding references to parent */
+  private def reparent: View =
+    copy(bindings = (bindings /: bindings) {
+      case (b, (label, view: View)) =>
+        b + (label -> view.copy(parent = Some(this)).reparent)
+      case (b, _) =>
+        b
+    })
+
   /** resolve a label within this view or its parent view */
   def apply(label: String): Option[Value] =
     if (label.contains(".")) {
